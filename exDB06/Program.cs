@@ -16,7 +16,7 @@ namespace exDB06
         {
             
             Program prog = new exDB06.Program();
-            Console.WriteLine("Choose a method: (1) Insert Pet, (2) Get Pet, (3) Insert Owner, (0) Close application");
+            Console.WriteLine("Choose a method: (1) Insert Pet, (2) Get Pet, (3) Insert Owner, (4) Get Owner By Last Name, (5) Get Owner By Email, (0) Close application");
             string input = Console.ReadLine();
             switch (input)
             {
@@ -26,6 +26,10 @@ namespace exDB06
                     prog.GetPet(); break;
                 case "3":
                     prog.InsertOwner(); break;
+                case "4":
+                    prog.GetOwnerByLastName(); break;
+                case "5":
+                    prog.GetOwnerById(); break;
                 case "0":
                     break;
                
@@ -37,14 +41,14 @@ namespace exDB06
 
         private void InsertPet()
         {
+            Console.Clear();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 try
                 {
                     con.Open();
-                    SqlCommand cmd1 = new SqlCommand("insertPet", con);
-                    cmd1.CommandType = CommandType.StoredProcedure;
-                    Console.Clear();
+                    SqlCommand cmd = new SqlCommand("insertPet", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
                     Console.WriteLine("Please, insert the parameters :");
                     Console.Write("PetName:");
                     string PetName = Console.ReadLine();
@@ -58,15 +62,14 @@ namespace exDB06
                     float PetWeight = float.Parse(Console.ReadLine());
                     Console.Write("OwnerId:");
                     int OwnerId = Convert.ToInt32(Console.ReadLine());
-                    
-                    cmd1.Parameters.Add(new SqlParameter("@PetName", PetName));
-                    cmd1.Parameters.Add(new SqlParameter("@PetType", PetType));
-                    cmd1.Parameters.Add(new SqlParameter("@PetBreed", PetBreed));
-                    cmd1.Parameters.Add(new SqlParameter("@PetDOB", PetDOB));
-                    cmd1.Parameters.Add(new SqlParameter("@PetWeight", PetWeight));
-                    cmd1.Parameters.Add(new SqlParameter("@OwnerId", OwnerId));
+                    cmd.Parameters.Add(new SqlParameter("@PetName", PetName));
+                    cmd.Parameters.Add(new SqlParameter("@PetType", PetType));
+                    cmd.Parameters.Add(new SqlParameter("@PetBreed", PetBreed));
+                    cmd.Parameters.Add(new SqlParameter("@PetDOB", PetDOB));
+                    cmd.Parameters.Add(new SqlParameter("@PetWeight", PetWeight));
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", OwnerId));
 
-                    cmd1.ExecuteNonQuery();
+                    cmd.ExecuteNonQuery();
                     
                  }
                 catch(SqlException e)
@@ -79,6 +82,7 @@ namespace exDB06
 
         private void GetPet()
         {
+            Console.Clear();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 try
@@ -86,10 +90,10 @@ namespace exDB06
                     con.Open();
                     
 
-                    SqlCommand cmd2 = new SqlCommand("getOwner", con);
-                    cmd2.CommandType = CommandType.StoredProcedure;
+                    SqlCommand cmd = new SqlCommand("getOwner", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                    SqlDataReader reader = cmd2.ExecuteReader();
+                    SqlDataReader reader = cmd.ExecuteReader();
 
                     if (reader.HasRows)
                     {
@@ -118,13 +122,14 @@ namespace exDB06
 
         private void InsertOwner()
         {
+            Console.Clear();
             using (SqlConnection con = new SqlConnection(connectionString))
             {
                 try
                 {
                     con.Open();
-                    SqlCommand cmd1 = new SqlCommand("insertOwner", con);
-                    cmd1.CommandType = CommandType.StoredProcedure;
+                    SqlCommand cmd = new SqlCommand("insertOwner", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
                     Console.Clear();
                     Console.WriteLine("Please, insert the parameters :");
                     Console.Write("OwnerLastName:");
@@ -136,13 +141,93 @@ namespace exDB06
                     Console.Write("Owner Email");
                     string OwnerEmail = Console.ReadLine();
                     
-                    cmd1.Parameters.Add(new SqlParameter("@OwnerLastName", OwnerLastName));
-                    cmd1.Parameters.Add(new SqlParameter("@OwnerFirstName", OwnerFirstName));
-                    cmd1.Parameters.Add(new SqlParameter("@OwnerPhone", OwnerPhone));
-                    cmd1.Parameters.Add(new SqlParameter("@OwnerEmail", OwnerEmail));
+                    cmd.Parameters.Add(new SqlParameter("@OwnerLastName", OwnerLastName));
+                    cmd.Parameters.Add(new SqlParameter("@OwnerFirstName", OwnerFirstName));
+                    cmd.Parameters.Add(new SqlParameter("@OwnerPhone", OwnerPhone));
+                    cmd.Parameters.Add(new SqlParameter("@OwnerEmail", OwnerEmail));
 
-                    cmd1.ExecuteNonQuery();
+                    cmd.ExecuteNonQuery();
 
+                }
+                catch (SqlException e)
+                {
+                    Console.WriteLine("UPS" + e.Message);
+                }
+                Console.ReadKey();
+            }
+        }
+
+        private void GetOwnerByLastName()
+        {
+            Console.Clear();
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+
+                SqlCommand cmd = new SqlCommand("getOwnerByLastName", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                Console.Write("Please, insert the Last Name:");
+                string LastName = Console.ReadLine();
+                cmd.Parameters.Add(new SqlParameter("@LastName", LastName));
+
+                try
+                {
+                    con.Open();
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            string id = reader["OwnerId"].ToString();
+                            string ownerlastname = reader["OwnerLastName"].ToString();
+                            string ownerfirstname = reader["OwnerFirstName"].ToString();
+                            string ownerphone = reader["OwnerPhone"].ToString();
+                            string owneremail = reader["OwnerEmail"].ToString();
+                            Console.WriteLine(id + " " + ownerlastname + " " + ownerfirstname + " " + ownerphone+ " " + owneremail);
+                        }
+                    }
+                }
+                catch (SqlException e)
+                {
+                    Console.WriteLine("UPS" + e.Message);
+                }
+                Console.ReadKey();
+            }
+        }
+
+        private void GetOwnerByEmail()
+        {
+            Console.Clear();
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+
+                SqlCommand cmd = new SqlCommand("getOwnerByEmail", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                Console.Write("Please, insert the Email Adress:");
+                string Email = Console.ReadLine();
+                cmd.Parameters.Add(new SqlParameter("@Email", Email));
+
+                try
+                {
+                    con.Open();
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            string id = reader["OwnerId"].ToString();
+                            string ownerlastname = reader["OwnerLastName"].ToString();
+                            string ownerfirstname = reader["OwnerFirstName"].ToString();
+                            string ownerphone = reader["OwnerPhone"].ToString();
+                            string owneremail = reader["OwnerEmail"].ToString();
+                            Console.WriteLine(id + " " + ownerlastname + " " + ownerfirstname + " " + ownerphone + " " + owneremail);
+                        }
+                    }
                 }
                 catch (SqlException e)
                 {
